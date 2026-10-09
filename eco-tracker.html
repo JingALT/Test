@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoTracker - Student Sustainability Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #2ecc71;
+            --dark-green: #27ae60;
+            --light-green: #d5f4e6;
+            --accent-green: #52b788;
+            --text-dark: #1a1a1a;
+            --text-light: #f5f5f5;
+            --border-color: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--dark-green) 0%, var(--accent-green) 100%);
+            color: var(--text-light);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Tabs Navigation */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--dark-green);
+            border-bottom-color: var(--primary-green);
+        }
+
+        .tab-btn:hover {
+            color: var(--dark-green);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Dashboard Section */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--dark-green);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Points Display Card */
+        .points-card {
+            grid-column: 1;
+            background: linear-gradient(135deg, var(--light-green) 0%, white 100%);
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .points-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--dark-green);
+            margin: 1rem 0;
+        }
+
+        .points-label {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        /* Progress Card */
+        .progress-card {
+            grid-column: 2;
+        }
+
+        .progress-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-green), var(--accent-green));
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        /* Action Form */
+        .action-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+        }
+
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-green);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-green), var(--accent-green));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--light-green);
+            color: var(--dark-green);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        /* Actions List */
+        .actions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .action-item {
+            background: white;
+            border-left: 4px solid var(--primary-green);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .action-item:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .action-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-name {
+            font-weight: 600;
+            color: var(--dark-green);
+            font-size: 1.1rem;
+        }
+
+        .action-points {
+            background: var(--light-green);
+            color: var(--dark-green);
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .action-date {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .action-description {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-student {
+            color: var(--accent-green);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background: linear-gradient(90deg, var(--light-green), white);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .leaderboard-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .leaderboard-rank {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--dark-green);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .leaderboard-rank.top-1 {
+            color: #ffd700;
+            font-size: 2rem;
+        }
+
+        .leaderboard-rank.top-2 {
+            color: #c0c0c0;
+        }
+
+        .leaderboard-rank.top-3 {
+            color: #cd7f32;
+        }
+
+        .leaderboard-info {
+            flex: 1;
+            margin: 0 1.5rem;
+        }
+
+        .leaderboard-name {
+            font-weight: bold;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .leaderboard-actions {
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .leaderboard-points {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-green);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .action-item,
+        .leaderboard-item {
+            animation: slideIn 0.3s ease;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--primary-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-hover);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.hide {
+            animation: slideIn 0.3s ease reverse;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            header {
+                padding: 1rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .header-stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .leaderboard-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .leaderboard-info {
+                margin: 0.5rem 0;
+                text-align: center;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🌱</span>
+                <span>EcoTracker</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPoints">0</div>
+                    <div class="stat-label">Your Points</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalActions">0</div>
+                    <div class="stat-label">Actions</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('log')">🔄 Log Action</button>
+            <button class="tab-btn" onclick="switchTab('history')">📝 History</button>
+            <button class="tab-btn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="dashboard">
+                <!-- Points Card -->
+                <div class="card points-card">
+                    <div class="card-title">🌿 Your Green Points</div>
+                    <div class="points-display" id="dashboardPoints">0</div>
+                    <div class="points-label">Keep growing your impact!</div>
+                </div>
+
+                <!-- Progress Card -->
+                <div class="card progress-card">
+                    <div class="card-title">📈 Progress</div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Recycling</span>
+                            <span id="recyclingProgress">0/500</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="recyclingFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Public Transport</span>
+                            <span id="transportProgress">0/400</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="transportFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">
+                            <span>Plastic Reduction</span>
+                            <span id="plasticProgress">0/300</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="plasticFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Action Tab -->
+        <div id="log" class="tab-content">
+            <div class="action-form">
+                <div class="card-title">🌍 Log an Eco-Friendly Action</div>
+                <form onsubmit="addAction(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="actionType">Action Type</label>
+                            <select id="actionType" required onchange="updateActionPoints()">
+                                <option value="">Select an action...</option>
+                                <option value="recycling">♻️ Recycling</option>
+                                <option value="transport">🚌 Public Transport</option>
+                                <option value="plastic">🚫 Avoid Single-Use Plastic</option>
+                                <option value="energy">💡 Energy Conservation</option>
+                                <option value="water">💧 Water Saving</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="points">Points</label>
+                            <input type="number" id="points" value="0" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentName">Your Name</label>
+                            <input type="text" id="studentName" placeholder="John Doe" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Log Action</button>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description (optional)</label>
+                        <textarea id="description" placeholder="Tell us more about your action..." rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Quick Stats for Actions -->
+            <div class="card">
+                <div class="card-title">🎯 Action Points Reference</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="padding: 1rem; background: var(--light-green); border-radius: 8px;">
+                        <div style="font-weight: bold; color: var(--dark-green);">♻️ Recycling</div>
+                        <div style="color: #666; margin-top: 0.5rem;">10 points per action</div>
+                    </div>
+                    <div style="padding: 1rem; background: var(--light-green); border-radius: 8px;">
+                        <div style="font-weight: bold; color: var(--dark-green);">🚌 Public Transport</div>
+                        <div style="color: #666; margin-top: 0.5rem;">15 points per trip</div>
+                    </div>
+                    <div style="padding: 1rem; background: var(--light-green); border-radius: 8px;">
+                        <div style="font-weight: bold; color: var(--dark-green);">🚫 Avoid Plastic</div>
+                        <div style="color: #666; margin-top: 0.5rem;">12 points per action</div>
+                    </div>
+                    <div style="padding: 1rem; background: var(--light-green); border-radius: 8px;">
+                        <div style="font-weight: bold; color: var(--dark-green);">💡 Energy Save</div>
+                        <div style="color: #666; margin-top: 0.5rem;">8 points per action</div>
+                    </div>
+                    <div style="padding: 1rem; background: var(--light-green); border-radius: 8px;">
+                        <div style="font-weight: bold; color: var(--dark-green);">💧 Water Saving</div>
+                        <div style="color: #666; margin-top: 0.5rem;">10 points per action</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div class="card-title" style="margin-bottom: 1.5rem;">📝 Your Action History</div>
+            <div class="actions-list" id="actionsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <p>No actions logged yet. Start making a difference!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leaderboard Tab -->
+        <div id="leaderboard" class="tab-content">
+            <div class="leaderboard">
+                <div class="card-title" style="margin-bottom: 1.5rem;">🏆 Top Students</div>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏅</div>
+                        <p>Leaderboard will appear as students log actions!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Action point values
+        const actionPoints = {
+            recycling: 10,
+            transport: 15,
+            plastic: 12,
+            energy: 8,
+            water: 10
+        };
+
+        const actionEmojis = {
+            recycling: '♻️',
+            transport: '🚌',
+            plastic: '🚫',
+            energy: '💡',
+            water: '💧'
+        };
+
+        // Data storage
+        let students = {};
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('ecoTrackerData');
+            if (saved) {
+                students = JSON.parse(saved);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('ecoTrackerData', JSON.stringify(students));
+        }
+
+        // Get current student
+        function getCurrentStudent() {
+            const name = document.getElementById('studentName').value;
+            return name || 'Anonymous Student';
+        }
+
+        // Update action points when type changes
+        function updateActionPoints() {
+            const type = document.getElementById('actionType').value;
+            const points = actionPoints[type] || 0;
+            document.getElementById('points').value = points;
+        }
+
+        // Add a new action
+        function addAction(event) {
+            event.preventDefault();
+
+            const actionType = document.getElementById('actionType').value;
+            const points = parseInt(document.getElementById('points').value);
+            const studentName = getCurrentStudent();
+            const description = document.getElementById('description').value;
+
+            if (!actionType || !studentName) {
+                showToast('Please fill in all required fields');
+                return;
+            }
+
+            // Initialize student if needed
+            if (!students[studentName]) {
+                students[studentName] = {
+                    totalPoints: 0,
+                    actions: [],
+                    actionCounts: { recycling: 0, transport: 0, plastic: 0, energy: 0, water: 0 }
+                };
+            }
+
+            // Add action
+            const action = {
+                id: Date.now(),
+                type: actionType,
+                points: points,
+                date: new Date().toLocaleDateString(),
+                description: description
+            };
+
+            students[studentName].actions.push(action);
+            students[studentName].totalPoints += points;
+            students[studentName].actionCounts[actionType]++;
+
+            saveData();
+            updateUI();
+            showToast(`🌱 ${points} green points earned!`);
+
+            // Reset form
+            document.getElementById('actionType').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('points').value = 0;
+        }
+
+        // Delete an action
+        function deleteAction(studentName, actionId) {
+            if (students[studentName]) {
+                const actionIndex = students[studentName].actions.findIndex(a => a.id === actionId);
+                if (actionIndex > -1) {
+                    const action = students[studentName].actions[actionIndex];
+                    students[studentName].totalPoints -= action.points;
+                    students[studentName].actionCounts[action.type]--;
+                    students[studentName].actions.splice(actionIndex, 1);
+                    saveData();
+                    updateUI();
+                    showToast('Action removed');
+                }
+            }
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            updateHeaderStats();
+            updateDashboard();
+            updateActionsList();
+            updateLeaderboard();
+        }
+
+        // Update header stats
+        function updateHeaderStats() {
+            const currentStudent = getCurrentStudent();
+            const studentData = students[currentStudent];
+
+            let totalPoints = 0;
+            let totalActions = 0;
+
+            if (studentData) {
+                totalPoints = studentData.totalPoints;
+                totalActions = studentData.actions.length;
+            }
+
+            document.getElementById('totalPoints').textContent = totalPoints;
+            document.getElementById('totalActions').textContent = totalActions;
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            const currentStudent = getCurrentStudent();
+            const studentData = students[currentStudent];
+
+            let totalPoints = 0;
+            let recycling = 0, transport = 0, plastic = 0;
+
+            if (studentData) {
+                totalPoints = studentData.totalPoints;
+                recycling = studentData.actionCounts.recycling * 10;
+                transport = studentData.actionCounts.transport * 15;
+                plastic = studentData.actionCounts.plastic * 12;
+            }
+
+            document.getElementById('dashboardPoints').textContent = totalPoints;
+
+            // Update progress bars
+            document.getElementById('recyclingProgress').textContent = `${recycling}/500`;
+            document.getElementById('recyclingFill').style.width = Math.min(recycling / 5, 100) + '%';
+
+            document.getElementById('transportProgress').textContent = `${transport}/400`;
+            document.getElementById('transportFill').style.width = Math.min(transport / 4, 100) + '%';
+
+            document.getElementById('plasticProgress').textContent = `${plastic}/300`;
+            document.getElementById('plasticFill').style.width = Math.min(plastic / 3, 100) + '%';
+        }
+
+        // Update actions list
+        function updateActionsList() {
+            const currentStudent = getCurrentStudent();
+            const studentData = students[currentStudent];
+            const actionsList = document.getElementById('actionsList');
+
+            if (!studentData || studentData.actions.length === 0) {
+                actionsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No actions logged yet. Start making a difference!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            actionsList.innerHTML = studentData.actions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map(action => `
+                    <div class="action-item">
+                        <div class="action-header">
+                            <div class="action-name">${actionEmojis[action.type]} ${action.type.charAt(0).toUpperCase() + action.type.slice(1)}</div>
+                            <div class="action-points">
+                                <span>🌱</span>
+                                <span>${action.points}</span>
+                            </div>
+                        </div>
+                        <div class="action-date">${action.date}</div>
+                        ${action.description ? `<div class="action-description">${action.description}</div>` : ''}
+                        <div class="action-footer">
+                            <div class="action-student">${currentStudent}</div>
+                            <button class="btn btn-danger" onclick="deleteAction('${currentStudent}', ${action.id})">Remove</button>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Update leaderboard
+        function updateLeaderboard() {
+            const leaderboardList = document.getElementById('leaderboardList');
+
+            // Sort students by points
+            const sortedStudents = Object.entries(students)
+                .map(([name, data]) => ({
+                    name: name,
+                    points: data.totalPoints,
+                    actionCount: data.actions.length
+                }))
+                .sort((a, b) => b.points - a.points)
+                .slice(0, 10);
+
+            if (sortedStudents.length === 0) {
+                leaderboardList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🏅</div>
+                        <p>Leaderboard will appear as students log actions!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            leaderboardList.innerHTML = sortedStudents
+                .map((student, index) => `
+                    <div class="leaderboard-item">
+                        <div class="leaderboard-rank ${index === 0 ? 'top-1' : index === 1 ? 'top-2' : index === 2 ? 'top-3' : ''}">
+                            ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '#' + (index + 1)}
+                        </div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${student.name}</div>
+                            <div class="leaderboard-actions">${student.actionCount} actions completed</div>
+                        </div>
+                        <div class="leaderboard-points">
+                            <span>🌱</span>
+                            <span>${student.points}</span>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Event listeners for real-time UI updates
+        document.getElementById('studentName').addEventListener('input', () => {
+            updateUI();
+        });
+
+        // Initialize
+        loadData();
+        updateUI();
+    </script>
+</body>
+</html>
